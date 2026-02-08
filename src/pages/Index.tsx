@@ -5,10 +5,11 @@ import { TasksView } from '@/components/TasksView';
 import { StatsView } from '@/components/StatsView';
 import { useTimer } from '@/hooks/useTimer';
 import { useTasks } from '@/hooks/useTasks';
-import { useStats } from '@/hooks/useStats';
+import { useStats, TimePeriod } from '@/hooks/useStats';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'timer' | 'tasks' | 'stats'>('timer');
+  const [statsPeriod, setStatsPeriod] = useState<TimePeriod>('weekly');
   
   const {
     session,
@@ -33,7 +34,7 @@ const Index = () => {
     addBreakTime,
   } = useTasks();
 
-  const { weeklyStats, monthlyCompletionRate } = useStats(tasks);
+  const { weeklyStats, monthlyCompletionRate, periodLabel } = useStats(tasks, statsPeriod);
 
   const tasksCompletedToday = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -84,6 +85,10 @@ const Index = () => {
             weeklyStats={weeklyStats}
             monthlyCompletionRate={monthlyCompletionRate}
             tasksCompletedToday={tasksCompletedToday}
+            tasks={tasks}
+            period={statsPeriod}
+            onPeriodChange={setStatsPeriod}
+            periodLabel={periodLabel}
           />
         )}
       </div>
