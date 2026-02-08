@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, Download, CheckCircle2 } from 'lucide-react';
+import { Search, Trash2, CheckCircle2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -9,12 +9,13 @@ import { toast } from 'sonner';
 
 interface CompletedTasksListProps {
   tasks: Task[];
+  onDeleteArchivedTask: (id: string) => void;
 }
 
 // Secret admin code to trigger CSV export
 const ADMIN_EXPORT_CODE = '::export-data::';
 
-export function CompletedTasksList({ tasks }: CompletedTasksListProps) {
+export function CompletedTasksList({ tasks, onDeleteArchivedTask }: CompletedTasksListProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   const completedTasks = useMemo(() => {
@@ -142,9 +143,19 @@ export function CompletedTasksList({ tasks }: CompletedTasksListProps) {
                     </p>
                   )}
                 </div>
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {formatDate(task.createdAt)}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {formatDate(task.createdAt)}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => onDeleteArchivedTask(task.id)}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
               </div>
               <TaskFocusBar task={task} />
             </div>

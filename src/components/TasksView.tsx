@@ -1,7 +1,19 @@
 import { useMemo } from 'react';
-import { AlertCircle, Clock } from 'lucide-react';
+import { AlertCircle, Clock, Trash2 } from 'lucide-react';
 import { TaskCard } from './TaskCard';
 import { AddTaskDialog } from './AddTaskDialog';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Task } from '@/types';
 
 interface TasksViewProps {
@@ -9,6 +21,7 @@ interface TasksViewProps {
   onAddTask: (task: Omit<Task, 'id' | 'createdAt' | 'completed' | 'focusTime' | 'breakTime'>) => void;
   onCompleteTask: (id: string) => void;
   onDeleteTask: (id: string) => void;
+  onClearAllTasks: () => void;
   onStartTimer: (taskId: string) => void;
 }
 
@@ -17,6 +30,7 @@ export function TasksView({
   onAddTask,
   onCompleteTask,
   onDeleteTask,
+  onClearAllTasks,
   onStartTimer,
 }: TasksViewProps) {
   const { overdue, upcoming, completed } = useMemo(() => {
@@ -30,11 +44,42 @@ export function TasksView({
     };
   }, [tasks]);
 
+  const hasAnyTasks = tasks.length > 0;
+
   return (
     <div className="min-h-[calc(100vh-120px)] px-4 pb-24 pt-6 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Tasks</h1>
-        <AddTaskDialog onAdd={onAddTask} />
+        <div className="flex items-center gap-2">
+          {hasAnyTasks && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Clear All
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Clear all tasks?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will remove all tasks from your task list. Completed tasks will still be visible in your Stats.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={onClearAllTasks}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Clear All
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+          <AddTaskDialog onAdd={onAddTask} />
+        </div>
       </div>
 
       {tasks.length === 0 ? (
