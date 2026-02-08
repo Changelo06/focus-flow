@@ -26,9 +26,12 @@ const Index = () => {
 
   const {
     tasks,
+    archivedTasks,
     addTask,
     updateTask,
     deleteTask,
+    deleteArchivedTask,
+    clearAllTasks,
     completeTask,
     addFocusTime,
     addBreakTime,
@@ -76,6 +79,7 @@ const Index = () => {
             onAddTask={addTask}
             onCompleteTask={completeTask}
             onDeleteTask={deleteTask}
+            onClearAllTasks={clearAllTasks}
             onStartTimer={handleStartTimer}
           />
         )}
@@ -85,9 +89,10 @@ const Index = () => {
             weeklyStats={weeklyStats}
             monthlyCompletionRate={monthlyCompletionRate}
             tasksCompletedToday={tasksCompletedToday}
-            tasks={tasks}
+            archivedTasks={archivedTasks}
             period={statsPeriod}
             onPeriodChange={setStatsPeriod}
+            onDeleteArchivedTask={deleteArchivedTask}
             periodLabel={periodLabel}
           />
         )}

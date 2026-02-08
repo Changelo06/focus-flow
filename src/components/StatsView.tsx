@@ -11,9 +11,10 @@ interface StatsViewProps {
   weeklyStats: WeeklyStats;
   monthlyCompletionRate: number;
   tasksCompletedToday: number;
-  tasks: Task[];
+  archivedTasks: Task[];
   period: TimePeriod;
   onPeriodChange: (period: TimePeriod) => void;
+  onDeleteArchivedTask: (id: string) => void;
   periodLabel: string;
 }
 
@@ -32,9 +33,10 @@ export function StatsView({
   weeklyStats, 
   monthlyCompletionRate, 
   tasksCompletedToday,
-  tasks,
+  archivedTasks,
   period,
   onPeriodChange,
+  onDeleteArchivedTask,
   periodLabel,
 }: StatsViewProps) {
   const motivationalMessage = useMemo(() => {
@@ -199,7 +201,7 @@ export function StatsView({
       </Card>
 
       {/* Completed Tasks List with Search */}
-      <CompletedTasksList tasks={tasks} />
+      <CompletedTasksList tasks={archivedTasks} onDeleteArchivedTask={onDeleteArchivedTask} />
 
       {/* Summary */}
       <div className="mt-6 text-center text-muted-foreground text-sm">
