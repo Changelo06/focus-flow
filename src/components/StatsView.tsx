@@ -1,13 +1,20 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Clock, CheckCircle2, TrendingUp, Coffee } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { WeeklyStats } from '@/types';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { CompletedTasksList } from './CompletedTasksList';
+import { Task, WeeklyStats } from '@/types';
+import { TimePeriod } from '@/hooks/useStats';
 import { cn } from '@/lib/utils';
 
 interface StatsViewProps {
   weeklyStats: WeeklyStats;
   monthlyCompletionRate: number;
   tasksCompletedToday: number;
+  tasks: Task[];
+  period: TimePeriod;
+  onPeriodChange: (period: TimePeriod) => void;
+  periodLabel: string;
 }
 
 const motivationalMessages = [
@@ -21,7 +28,15 @@ const motivationalMessages = [
   "Progress, not perfection. You're doing amazing! ✨",
 ];
 
-export function StatsView({ weeklyStats, monthlyCompletionRate, tasksCompletedToday }: StatsViewProps) {
+export function StatsView({ 
+  weeklyStats, 
+  monthlyCompletionRate, 
+  tasksCompletedToday,
+  tasks,
+  period,
+  onPeriodChange,
+  periodLabel,
+}: StatsViewProps) {
   const motivationalMessage = useMemo(() => {
     return motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
   }, []);
@@ -34,6 +49,32 @@ export function StatsView({ weeklyStats, monthlyCompletionRate, tasksCompletedTo
   };
 
   const maxFocusTime = Math.max(...weeklyStats.dailyStats.map(d => d.focusTime), 1);
+
+  // For monthly/quarterly, aggregate into weeks for better visualization
+  const chartData = useMemo(() => {
+    if (period === 'daily' || period === 'weekly') {
+      return weeklyStats.dailyStats;
+    }
+
+    // Aggregate by weeks for monthly/quarterly
+    const weeklyData: { date: string; focusTime: number; label: string }[] = [];
+    const chunkSize = 7;
+    
+    for (let i = 0; i < weeklyStats.dailyStats.length; i += chunkSize) {
+      const chunk = weeklyStats.dailyStats.slice(i, i + chunkSize);
+      const totalFocus = chunk.reduce((sum, d) => sum + d.focusTime, 0);
+      const startDate = new Date(chunk[0].date);
+      weeklyData.push({
+        date: chunk[0].date,
+        focusTime: totalFocus,
+        label: `W${Math.floor(i / chunkSize) + 1}`,
+      });
+    }
+    
+    return weeklyData;
+  }, [weeklyStats.dailyStats, period]);
+
+  const chartMaxFocus = Math.max(...chartData.map(d => d.focusTime), 1);
 
   return (
     <div className="min-h-[calc(100vh-120px)] px-4 pb-24 pt-6 animate-fade-in">
@@ -64,7 +105,7 @@ export function StatsView({ weeklyStats, monthlyCompletionRate, tasksCompletedTo
             <span className="text-xs font-medium uppercase tracking-wide">Focus Time</span>
           </div>
           <p className="text-2xl font-bold">{formatTime(weeklyStats.totalFocusTime)}</p>
-          <p className="text-xs text-muted-foreground">This week</p>
+          <p className="text-xs text-muted-foreground">{periodLabel}</p>
         </Card>
 
         <Card className="p-4">
@@ -73,7 +114,7 @@ export function StatsView({ weeklyStats, monthlyCompletionRate, tasksCompletedTo
             <span className="text-xs font-medium uppercase tracking-wide">Break Time</span>
           </div>
           <p className="text-2xl font-bold">{formatTime(weeklyStats.totalBreakTime)}</p>
-          <p className="text-xs text-muted-foreground">This week</p>
+          <p className="text-xs text-muted-foreground">{periodLabel}</p>
         </Card>
 
         <Card className="p-4">
@@ -82,7 +123,7 @@ export function StatsView({ weeklyStats, monthlyCompletionRate, tasksCompletedTo
             <span className="text-xs font-medium uppercase tracking-wide">Completed</span>
           </div>
           <p className="text-2xl font-bold">{weeklyStats.tasksCompleted}</p>
-          <p className="text-xs text-muted-foreground">Tasks this week</p>
+          <p className="text-xs text-muted-foreground">Tasks {periodLabel.toLowerCase()}</p>
         </Card>
 
         <Card className="p-4">
@@ -95,13 +136,39 @@ export function StatsView({ weeklyStats, monthlyCompletionRate, tasksCompletedTo
         </Card>
       </div>
 
-      {/* Weekly Chart */}
-      <Card className="p-4">
-        <h3 className="font-semibold mb-4">Weekly Activity</h3>
+      {/* Activity Chart with Period Toggle */}
+      <Card className="p-4 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold">Activity Overview</h3>
+        </div>
+        
+        {/* Period Toggle */}
+        <ToggleGroup 
+          type="single" 
+          value={period} 
+          onValueChange={(value) => value && onPeriodChange(value as TimePeriod)}
+          className="justify-start mb-4"
+        >
+          <ToggleGroupItem value="daily" className="text-xs px-3 h-8">
+            Daily
+          </ToggleGroupItem>
+          <ToggleGroupItem value="weekly" className="text-xs px-3 h-8">
+            Weekly
+          </ToggleGroupItem>
+          <ToggleGroupItem value="monthly" className="text-xs px-3 h-8">
+            Monthly
+          </ToggleGroupItem>
+          <ToggleGroupItem value="quarterly" className="text-xs px-3 h-8">
+            Quarterly
+          </ToggleGroupItem>
+        </ToggleGroup>
+
         <div className="flex items-end justify-between gap-2 h-32">
-          {weeklyStats.dailyStats.map((day, i) => {
-            const height = (day.focusTime / maxFocusTime) * 100;
-            const dayName = new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' });
+          {chartData.map((day, i) => {
+            const height = (day.focusTime / chartMaxFocus) * 100;
+            const dayName = period === 'daily' || period === 'weekly'
+              ? new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })
+              : (day as any).label || `W${i + 1}`;
             const isToday = day.date === new Date().toISOString().split('T')[0];
             
             return (
@@ -130,6 +197,9 @@ export function StatsView({ weeklyStats, monthlyCompletionRate, tasksCompletedTo
           <span className="text-xs text-muted-foreground">Focus time (minutes)</span>
         </div>
       </Card>
+
+      {/* Completed Tasks List with Search */}
+      <CompletedTasksList tasks={tasks} />
 
       {/* Summary */}
       <div className="mt-6 text-center text-muted-foreground text-sm">
