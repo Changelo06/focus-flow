@@ -16,6 +16,14 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
+      spacing: {
+        // Design System: 8pt Grid
+        'section': '32px',        // Major section breaks
+        'section-lg': '48px',     // Large section breaks
+        'card-gap': '8px',        // Minimal gap - equal vertical & horizontal
+        'element-gap': '8px',     // Closely related elements (icon + label)
+        'frame': '6px',           // Minimal margins for maximum width
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -85,11 +93,13 @@ export default {
         "2xl": "calc(var(--radius) + 8px)",
       },
       boxShadow: {
-        'soft': 'var(--shadow-sm)',
-        'medium': 'var(--shadow-md)',
-        'elevated': 'var(--shadow-lg)',
-        'focus-ring': 'var(--shadow-focus)',
-        'break-ring': 'var(--shadow-break)',
+        // Design System: Elevation Hierarchy
+        'soft': '0 1px 2px 0 rgb(0 0 0 / 0.05)',           // Subtle - Tertiary elements
+        'medium': '0 4px 6px -1px rgb(0 0 0 / 0.1)',       // Standard - Cards
+        'elevated': '0 10px 15px -3px rgb(0 0 0 / 0.1)',   // Prominent - Primary cards
+        'focus-ring': '0 0 0 3px hsl(var(--focus) / 0.2)', // Focus state
+        'break-ring': '0 0 0 3px hsl(var(--break) / 0.2)', // Break state
+        'primary-elevated': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04)', // Primary info
       },
       keyframes: {
         "accordion-down": {

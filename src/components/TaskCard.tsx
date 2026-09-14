@@ -10,9 +10,10 @@ interface TaskCardProps {
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
   onStartTimer: (id: string) => void;
+  onClick: (task: Task) => void;
 }
 
-export function TaskCard({ task, onComplete, onDelete, onStartTimer }: TaskCardProps) {
+export function TaskCard({ task, onComplete, onDelete, onStartTimer, onClick }: TaskCardProps) {
   const isOverdue = isPast(task.deadline) && !task.completed;
   const isUrgent = isFuture(task.deadline) && differenceInDays(task.deadline, new Date()) <= 3;
   
@@ -24,17 +25,23 @@ export function TaskCard({ task, onComplete, onDelete, onStartTimer }: TaskCardP
   };
 
   return (
-    <Card className={cn(
-      "p-4 transition-all duration-200 hover:shadow-medium",
-      task.completed && "opacity-60",
-      isOverdue && "border-destructive/50 bg-destructive/5",
-      isUrgent && !isOverdue && "border-warning/50 bg-warning/5"
-    )}>
+    <Card 
+      className={cn(
+        "p-5 transition-all duration-200 hover:shadow-medium cursor-pointer",
+        task.completed && "opacity-60",
+        isOverdue && "border-destructive/50 bg-destructive/5",
+        isUrgent && !isOverdue && "border-warning/50 bg-warning/5"
+      )}
+      onClick={() => onClick(task)}
+    >
       <div className="flex items-start gap-3">
         <button
-          onClick={() => onComplete(task.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onComplete(task.id);
+          }}
           className={cn(
-            "mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+            "mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0",
             task.completed 
               ? "bg-success border-success text-success-foreground" 
               : "border-muted-foreground/40 hover:border-success"
@@ -50,12 +57,6 @@ export function TaskCard({ task, onComplete, onDelete, onStartTimer }: TaskCardP
           )}>
             {task.title}
           </h3>
-          
-          {task.description && (
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-              {task.description}
-            </p>
-          )}
 
           <div className="flex items-center flex-wrap gap-3 mt-3">
             <div className={cn(
@@ -85,7 +86,10 @@ export function TaskCard({ task, onComplete, onDelete, onStartTimer }: TaskCardP
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onStartTimer(task.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onStartTimer(task.id);
+              }}
               className="text-focus hover:text-focus hover:bg-focus/10"
             >
               <Timer className="w-4 h-4" />
@@ -94,7 +98,10 @@ export function TaskCard({ task, onComplete, onDelete, onStartTimer }: TaskCardP
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onDelete(task.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(task.id);
+            }}
             className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
           >
             <Trash2 className="w-4 h-4" />

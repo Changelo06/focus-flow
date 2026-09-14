@@ -10,10 +10,14 @@ interface TimerViewProps {
   session: TimerSession;
   timeRemaining: number;
   progress: number;
+  isPaused?: boolean;
   tasks: Task[];
   onStart: (taskId?: string | null) => void;
-  onBreak: () => void;
+  onPause?: () => void;
   onResume: () => void;
+  onBreak: () => void;
+  onResumeFocus?: () => void;
+  onStop?: () => void;
   onComplete: () => void;
   onReset: (duration?: number) => void;
   onDurationChange: (duration: number) => void;
@@ -27,10 +31,14 @@ export function TimerView({
   session,
   timeRemaining,
   progress,
+  isPaused = false,
   tasks,
   onStart,
-  onBreak,
+  onPause,
   onResume,
+  onBreak,
+  onResumeFocus,
+  onStop,
   onComplete,
   onReset,
   onDurationChange,
@@ -60,8 +68,8 @@ export function TimerView({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-120px)] px-4 pb-20 gap-8 animate-fade-in">
-      {/* Task Selector */}
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-120px)] pb-20 gap-section animate-fade-in" style={{ paddingTop: 'max(40px, env(safe-area-inset-top))', paddingLeft: '6px', paddingRight: '6px', paddingBottom: 'max(80px, env(safe-area-inset-bottom))' }}>
+      {/* Task Selector - Secondary Element */}
       <TaskSelector
         tasks={tasks}
         selectedTaskId={session.taskId}
@@ -69,10 +77,17 @@ export function TimerView({
         disabled={session.status !== 'idle'}
       />
 
-      {/* Timer Display */}
-      <TimerDisplay timeRemaining={timeRemaining} session={session} />
+      {/* Timer Display - Primary Focus Element */}
+      <TimerDisplay 
+        timeRemaining={timeRemaining} 
+        session={session}
+        isPaused={isPaused}
+        onPause={onPause}
+        onResume={onResume}
+        onStop={onStop}
+      />
 
-      {/* Progress Bar */}
+      {/* Progress Bar - Visual Feedback */}
       <ProgressBar
         focusSegments={session.focusSegments}
         breakSegments={session.breakSegments}
@@ -80,19 +95,23 @@ export function TimerView({
         status={session.status}
       />
 
-      {/* Duration Selector */}
+      {/* Duration Selector - Secondary Control */}
       <DurationSelector
         duration={session.duration}
         onDurationChange={onDurationChange}
         disabled={session.status !== 'idle'}
       />
 
-      {/* Controls */}
+      {/* Controls - Primary Actions */}
       <TimerControls
         status={session.status}
+        isPaused={isPaused}
         onStart={() => onStart(session.taskId)}
-        onBreak={onBreak}
+        onPause={onPause}
         onResume={onResume}
+        onResumeFocus={onResumeFocus}
+        onBreak={onBreak}
+        onStop={onStop}
         onComplete={handleComplete}
         onReset={() => onReset()}
       />

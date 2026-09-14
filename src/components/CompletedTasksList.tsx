@@ -1,11 +1,24 @@
 import { useState, useMemo } from 'react';
-import { Search, Trash2, CheckCircle2 } from 'lucide-react';
+import { Search, Trash2, CheckCircle2, Download } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { TaskFocusBar } from './TaskFocusBar';
 import { Task } from '@/types';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface CompletedTasksListProps {
   tasks: Task[];
@@ -17,6 +30,7 @@ const ADMIN_EXPORT_CODE = '::export-data::';
 
 export function CompletedTasksList({ tasks, onDeleteArchivedTask }: CompletedTasksListProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [showExportDialog, setShowExportDialog] = useState(false);
 
   const completedTasks = useMemo(() => {
     return tasks
@@ -34,52 +48,74 @@ export function CompletedTasksList({ tasks, onDeleteArchivedTask }: CompletedTas
     );
   }, [completedTasks, searchQuery]);
 
-  const handleExportCSV = () => {
-    const headers = [
-      'Task ID',
-      'Title',
-      'Description',
-      'Deadline',
-      'Created At',
-      'Completed',
-      'Focus Time (seconds)',
-      'Break Time (seconds)',
-      'Total Time (seconds)',
-      'Focus Percentage',
-    ];
+  const handleExportXLSX = async () => {
+    try {
+      // Prepare data for Excel
+      const exportData = tasks.map(task => {
+        const totalTime = task.focusTime + task.breakTime;
+        const focusPercentage = totalTime > 0 ? ((task.focusTime / totalTime) * 100).toFixed(2) : '0';
+        return {
+          'Task ID': task.id,
+          'Title': task.title,
+          'Description': task.description,
+          'Deadline': task.deadline.toISOString(),
+          'Created At': task.createdAt.toISOString(),
+          'Completed': task.completed ? 'Yes' : 'No',
+          'Focus Time (seconds)': task.focusTime,
+          'Break Time (seconds)': task.breakTime,
+          'Total Time (seconds)': totalTime,
+          'Focus Percentage': focusPercentage + '%',
+        };
+      });
 
-    const rows = tasks.map(task => {
-      const totalTime = task.focusTime + task.breakTime;
-      const focusPercentage = totalTime > 0 ? ((task.focusTime / totalTime) * 100).toFixed(2) : '0';
-      return [
-        task.id,
-        `"${task.title.replace(/"/g, '""')}"`,
-        `"${task.description.replace(/"/g, '""')}"`,
-        task.deadline.toISOString(),
-        task.createdAt.toISOString(),
-        task.completed ? 'Yes' : 'No',
-        task.focusTime,
-        task.breakTime,
-        totalTime,
-        focusPercentage,
-      ].join(',');
-    });
+      // Create workbook and worksheet
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Study Track Data');
 
-    const csvContent = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `lockin-study-data-${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    
-    toast.success('Data exported successfully!', {
-      description: `Exported ${tasks.length} tasks to CSV`,
-    });
-    setSearchQuery('');
+      // Generate filename with date and time: Study_Track_DDMMYYYYHHMM.xlsx
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const filename = `Study_Track_${day}${month}${year}${hours}${minutes}.xlsx`;
+
+      const isNative = Capacitor.isNativePlatform();
+
+      if (isNative) {
+        // For mobile: save using Capacitor Filesystem
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+        
+        const result = await Filesystem.writeFile({
+          path: filename,
+          data: wbout,
+          directory: Directory.Documents,
+        });
+
+        toast.success('Data exported successfully!', {
+          description: `Exported ${tasks.length} tasks\n📁 Saved to: Documents/${filename}`,
+          duration: 6000,
+        });
+      } else {
+        // For web: use standard download
+        XLSX.writeFile(wb, filename);
+        
+        toast.success('Data exported successfully!', {
+          description: `Exported ${tasks.length} tasks\n📁 Saved to: Downloads/${filename}`,
+          duration: 5000,
+        });
+      }
+      
+      setSearchQuery('');
+      setShowExportDialog(false);
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export data', {
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+      });
+    }
   };
 
   const handleSearchChange = (value: string) => {
@@ -87,7 +123,8 @@ export function CompletedTasksList({ tasks, onDeleteArchivedTask }: CompletedTas
     
     // Check for admin export code
     if (value === ADMIN_EXPORT_CODE) {
-      handleExportCSV();
+      setShowExportDialog(true);
+      setSearchQuery('');
     }
   };
 
@@ -100,7 +137,8 @@ export function CompletedTasksList({ tasks, onDeleteArchivedTask }: CompletedTas
   };
 
   return (
-    <Card className="p-4">
+    <>
+    <Card className="p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-success" />
@@ -163,5 +201,29 @@ export function CompletedTasksList({ tasks, onDeleteArchivedTask }: CompletedTas
         )}
       </div>
     </Card>
+
+    {/* Export Confirmation Dialog */}
+    <AlertDialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <Download className="w-5 h-5" />
+            Download User Report?
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            Export all {tasks.length} tasks to an Excel file. The file will be saved as Study_Track_[DateTime].xlsx
+            <br />
+            <span className="text-xs mt-2 inline-block">
+              📁 Location: {Capacitor.isNativePlatform() ? 'Documents folder' : 'Downloads folder'}
+            </span>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleExportXLSX}>Download</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

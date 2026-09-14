@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { AlertCircle, Clock, Trash2 } from 'lucide-react';
 import { TaskCard } from './TaskCard';
+import { TaskDetailDialog } from './TaskDetailDialog';
 import { AddTaskDialog } from './AddTaskDialog';
 import { Button } from '@/components/ui/button';
 import {
@@ -33,6 +34,9 @@ export function TasksView({
   onClearAllTasks,
   onStartTimer,
 }: TasksViewProps) {
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+
   const { overdue, upcoming, completed } = useMemo(() => {
     const now = new Date();
     const sorted = [...tasks].sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
@@ -47,10 +51,10 @@ export function TasksView({
   const hasAnyTasks = tasks.length > 0;
 
   return (
-    <div className="min-h-[calc(100vh-120px)] px-4 pb-24 pt-6 animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
+    <div className="min-h-[calc(100vh-120px)] pb-24 animate-fade-in" style={{ paddingTop: 'max(40px, env(safe-area-inset-top))', paddingLeft: '6px', paddingRight: '6px', paddingBottom: 'max(96px, env(safe-area-inset-bottom))' }}>
+      <div className="flex items-center justify-between mb-section">
         <h1 className="text-2xl font-bold">Tasks</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-element-gap">
           {hasAnyTasks && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -83,8 +87,8 @@ export function TasksView({
       </div>
 
       {tasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
+        <div className="flex flex-col items-center justify-center py-section-lg text-center">
+          <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-card-gap shadow-soft">
             <Clock className="w-8 h-8 text-muted-foreground" />
           </div>
           <h3 className="font-semibold text-lg mb-2">No tasks yet</h3>
@@ -93,17 +97,17 @@ export function TasksView({
           </p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-section">
           {/* Overdue Tasks */}
           {overdue.length > 0 && (
             <section>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-element-gap mb-card-gap">
                 <AlertCircle className="w-4 h-4 text-destructive" />
-                <h2 className="text-sm font-semibold text-destructive uppercase tracking-wide">
+                <h2 className="text-sm font-semibold text-destructive uppercase tracking-wider">
                   Overdue ({overdue.length})
                 </h2>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-card-gap">
                 {overdue.map(task => (
                   <TaskCard
                     key={task.id}
@@ -111,6 +115,10 @@ export function TasksView({
                     onComplete={onCompleteTask}
                     onDelete={onDeleteTask}
                     onStartTimer={onStartTimer}
+                    onClick={(task) => {
+                      setSelectedTask(task);
+                      setDetailDialogOpen(true);
+                    }}
                   />
                 ))}
               </div>
@@ -120,10 +128,10 @@ export function TasksView({
           {/* Upcoming Tasks */}
           {upcoming.length > 0 && (
             <section>
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-card-gap">
                 Upcoming ({upcoming.length})
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-card-gap">
                 {upcoming.map(task => (
                   <TaskCard
                     key={task.id}
@@ -131,6 +139,10 @@ export function TasksView({
                     onComplete={onCompleteTask}
                     onDelete={onDeleteTask}
                     onStartTimer={onStartTimer}
+                    onClick={(task) => {
+                      setSelectedTask(task);
+                      setDetailDialogOpen(true);
+                    }}
                   />
                 ))}
               </div>
@@ -140,10 +152,10 @@ export function TasksView({
           {/* Completed Tasks */}
           {completed.length > 0 && (
             <section>
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-card-gap">
                 Completed ({completed.length})
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-card-gap">
                 {completed.map(task => (
                   <TaskCard
                     key={task.id}
@@ -151,6 +163,10 @@ export function TasksView({
                     onComplete={onCompleteTask}
                     onDelete={onDeleteTask}
                     onStartTimer={onStartTimer}
+                    onClick={(task) => {
+                      setSelectedTask(task);
+                      setDetailDialogOpen(true);
+                    }}
                   />
                 ))}
               </div>
@@ -158,6 +174,18 @@ export function TasksView({
           )}
         </div>
       )}
+
+      {/* Task Detail Dialog */}
+      <TaskDetailDialog
+        task={selectedTask}
+        open={detailDialogOpen}
+        onClose={() => {
+          setDetailDialogOpen(false);
+          setSelectedTask(null);
+        }}
+        onComplete={onCompleteTask}
+        onStartTimer={onStartTimer}
+      />
     </div>
   );
 }

@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Android generated files and private signing configuration
+.gradle/
+**/build/
+local.properties
+*.apk
+*.aab
+*.jks
+*.keystore
+android/app/src/main/assets/
+android/capacitor-cordova-android-plugins/
+

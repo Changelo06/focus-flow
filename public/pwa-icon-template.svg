@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Gradient Background -->
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="256" fill="url(#grad)"/>
+  
+  <!-- Pomodoro Timer Icon -->
+  <g transform="translate(256, 256)">
+    <!-- Clock Circle -->
+    <circle cx="0" cy="0" r="140" fill="white" stroke="none"/>
+    
+    <!-- Clock Markers -->
+    <line x1="0" y1="-130" x2="0" y2="-120" stroke="#6366f1" stroke-width="8" stroke-linecap="round"/>
+    <line x1="0" y1="120" x2="0" y2="130" stroke="#6366f1" stroke-width="8" stroke-linecap="round"/>
+    <line x1="120" y1="0" x2="130" y2="0" stroke="#6366f1" stroke-width="8" stroke-linecap="round"/>
+    <line x1="-130" y1="0" x2="-120" y2="0" stroke="#6366f1" stroke-width="8" stroke-linecap="round"/>
+    
+    <!-- Clock Hands -->
+    <line x1="0" y1="0" x2="0" y2="-80" stroke="#6366f1" stroke-width="10" stroke-linecap="round"/>
+    <line x1="0" y1="0" x2="50" y2="50" stroke="#8b5cf6" stroke-width="8" stroke-linecap="round"/>
+    
+    <!-- Center Dot -->
+    <circle cx="0" cy="0" r="12" fill="#6366f1"/>
+  </g>
+  
+  <!-- Focus Arc -->
+  <path d="M 256 80 A 176 176 0 0 1 410 175" stroke="white" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.8"/>
+</svg>

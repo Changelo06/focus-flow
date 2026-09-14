@@ -3,26 +3,38 @@ import { BottomNav } from '@/components/BottomNav';
 import { TimerView } from '@/components/TimerView';
 import { TasksView } from '@/components/TasksView';
 import { StatsView } from '@/components/StatsView';
+import { AffirmationOverlay } from '@/components/AffirmationOverlay';
 import { useTimer } from '@/hooks/useTimer';
 import { useTasks } from '@/hooks/useTasks';
 import { useStats, TimePeriod } from '@/hooks/useStats';
+import { useAffirmations } from '@/hooks/useAffirmations';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'timer' | 'tasks' | 'stats'>('timer');
   const [statsPeriod, setStatsPeriod] = useState<TimePeriod>('weekly');
   
+  const { affirmation, showAffirmation, hideAffirmation } = useAffirmations();
+  
   const {
     session,
     timeRemaining,
     progress,
+    isPaused,
     startFocus,
     startBreak,
     resumeFocus,
+    pause,
+    resume,
+    stop,
     completeEarly,
     reset,
     setDuration,
     setTaskId,
-  } = useTimer();
+  } = useTimer({
+    onSessionComplete: (type) => {
+      showAffirmation(type);
+    },
+  });
 
   const {
     tasks,
@@ -53,16 +65,20 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-md mx-auto">
+      <div className="max-w-lg mx-auto px-6">
         {activeTab === 'timer' && (
           <TimerView
             session={session}
             timeRemaining={timeRemaining}
             progress={progress}
+            isPaused={isPaused}
             tasks={tasks}
             onStart={startFocus}
+            onPause={pause}
+            onResume={resume}
             onBreak={startBreak}
-            onResume={resumeFocus}
+            onResumeFocus={resumeFocus}
+            onStop={stop}
             onComplete={completeEarly}
             onReset={reset}
             onDurationChange={setDuration}
@@ -99,6 +115,14 @@ const Index = () => {
       </div>
 
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      
+      {/* Affirmation Overlay */}
+      <AffirmationOverlay
+        message={affirmation.message}
+        isVisible={affirmation.isVisible}
+        type={affirmation.type}
+        onDismiss={hideAffirmation}
+      />
     </div>
   );
 };

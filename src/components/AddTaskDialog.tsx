@@ -30,6 +30,9 @@ export function AddTaskDialog({ onAdd }: AddTaskDialogProps) {
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState('12:00');
 
+  const TITLE_MAX_LENGTH = 20;
+  const DESCRIPTION_MAX_LENGTH = 100;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !date) return;
@@ -65,8 +68,12 @@ export function AddTaskDialog({ onAdd }: AddTaskDialogProps) {
               placeholder="Task title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              maxLength={TITLE_MAX_LENGTH}
               className="text-lg font-medium"
             />
+            <p className="text-xs text-muted-foreground mt-1.5">
+              {title.length}/{TITLE_MAX_LENGTH} characters
+            </p>
           </div>
           
           <div>
@@ -74,8 +81,12 @@ export function AddTaskDialog({ onAdd }: AddTaskDialogProps) {
               placeholder="Description (optional)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              maxLength={DESCRIPTION_MAX_LENGTH}
               rows={3}
             />
+            <p className="text-xs text-muted-foreground mt-1.5">
+              {description.length}/{DESCRIPTION_MAX_LENGTH} characters
+            </p>
           </div>
 
           <div className="flex gap-3">

@@ -3,6 +3,7 @@ import { Clock, CheckCircle2, TrendingUp, Coffee } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { CompletedTasksList } from './CompletedTasksList';
+import { ThemeToggle } from './ThemeToggle';
 import { Task, WeeklyStats } from '@/types';
 import { TimePeriod } from '@/hooks/useStats';
 import { cn } from '@/lib/utils';
@@ -79,69 +80,77 @@ export function StatsView({
   const chartMaxFocus = Math.max(...chartData.map(d => d.focusTime), 1);
 
   return (
-    <div className="min-h-[calc(100vh-120px)] px-4 pb-24 pt-6 animate-fade-in">
-      <h1 className="text-2xl font-bold mb-6">Your Stats</h1>
+    <div className="min-h-[calc(100vh-120px)] pb-24 animate-fade-in" style={{ paddingTop: 'max(40px, env(safe-area-inset-top))', paddingLeft: '6px', paddingRight: '6px', paddingBottom: 'max(96px, env(safe-area-inset-bottom))' }}>
+      {/* Header with Design System spacing */}
+      <div className="flex items-center justify-between mb-card-gap">
+        <h1 className="text-2xl font-bold">Your Stats</h1>
+        <ThemeToggle />
+      </div>
 
       {/* Motivational Message */}
       {tasksCompletedToday > 0 && (
-        <Card className="p-4 mb-6 bg-gradient-to-r from-success/10 to-success/5 border-success/20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full gradient-success flex items-center justify-center">
+        <Card className="p-5 mb-card-gap bg-gradient-to-r from-success/10 to-success/5 border-success/20 shadow-soft">
+          <div className="flex items-center gap-element-gap">
+            <div className="w-10 h-10 rounded-full gradient-success flex items-center justify-center flex-shrink-0">
               <CheckCircle2 className="w-5 h-5 text-success-foreground" />
             </div>
             <div>
               <p className="font-semibold text-success">
                 {tasksCompletedToday} task{tasksCompletedToday > 1 ? 's' : ''} completed today!
               </p>
-              <p className="text-sm text-muted-foreground">{motivationalMessage}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">{motivationalMessage}</p>
             </div>
           </div>
         </Card>
       )}
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-focus mb-2">
-            <Clock className="w-4 h-4" />
-            <span className="text-xs font-medium uppercase tracking-wide">Focus Time</span>
+      {/* Primary Info: Stats Grid with Elevated Hierarchy */}
+      <div className="grid grid-cols-2 gap-card-gap mb-section">
+        {/* Focus Time - Primary Stat */}
+        <Card className="p-5 shadow-elevated hover:shadow-primary-elevated transition-shadow duration-200">
+          <div className="flex items-center gap-element-gap text-focus mb-3">
+            <Clock className="w-5 h-5" />
+            <span className="text-xs font-semibold uppercase tracking-wider">Focus Time</span>
           </div>
-          <p className="text-2xl font-bold">{formatTime(weeklyStats.totalFocusTime)}</p>
-          <p className="text-xs text-muted-foreground">{periodLabel}</p>
+          <p className="text-3xl font-bold mb-1">{formatTime(weeklyStats.totalFocusTime)}</p>
+          <p className="text-xs text-muted-foreground font-medium">{periodLabel}</p>
         </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-break mb-2">
-            <Coffee className="w-4 h-4" />
-            <span className="text-xs font-medium uppercase tracking-wide">Break Time</span>
+        {/* Break Time - Primary Stat */}
+        <Card className="p-5 shadow-elevated hover:shadow-primary-elevated transition-shadow duration-200">
+          <div className="flex items-center gap-element-gap text-break mb-3">
+            <Coffee className="w-5 h-5" />
+            <span className="text-xs font-semibold uppercase tracking-wider">Break Time</span>
           </div>
-          <p className="text-2xl font-bold">{formatTime(weeklyStats.totalBreakTime)}</p>
-          <p className="text-xs text-muted-foreground">{periodLabel}</p>
+          <p className="text-3xl font-bold mb-1">{formatTime(weeklyStats.totalBreakTime)}</p>
+          <p className="text-xs text-muted-foreground font-medium">{periodLabel}</p>
         </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-success mb-2">
-            <CheckCircle2 className="w-4 h-4" />
-            <span className="text-xs font-medium uppercase tracking-wide">Completed</span>
+        {/* Tasks Completed - Primary Stat */}
+        <Card className="p-5 shadow-elevated hover:shadow-primary-elevated transition-shadow duration-200">
+          <div className="flex items-center gap-element-gap text-success mb-3">
+            <CheckCircle2 className="w-5 h-5" />
+            <span className="text-xs font-semibold uppercase tracking-wider">Completed</span>
           </div>
-          <p className="text-2xl font-bold">{weeklyStats.tasksCompleted}</p>
-          <p className="text-xs text-muted-foreground">Tasks {periodLabel.toLowerCase()}</p>
+          <p className="text-3xl font-bold mb-1">{weeklyStats.tasksCompleted}</p>
+          <p className="text-xs text-muted-foreground font-medium">Tasks {periodLabel.toLowerCase()}</p>
         </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-warning mb-2">
-            <TrendingUp className="w-4 h-4" />
-            <span className="text-xs font-medium uppercase tracking-wide">Success Rate</span>
+        {/* Success Rate - Primary Stat */}
+        <Card className="p-5 shadow-elevated hover:shadow-primary-elevated transition-shadow duration-200">
+          <div className="flex items-center gap-element-gap text-warning mb-3">
+            <TrendingUp className="w-5 h-5" />
+            <span className="text-xs font-semibold uppercase tracking-wider">Success Rate</span>
           </div>
-          <p className="text-2xl font-bold">{monthlyCompletionRate}%</p>
-          <p className="text-xs text-muted-foreground">This month</p>
+          <p className="text-3xl font-bold mb-1">{monthlyCompletionRate}%</p>
+          <p className="text-xs text-muted-foreground font-medium">This month</p>
         </Card>
       </div>
 
-      {/* Activity Chart with Period Toggle */}
-      <Card className="p-4 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold">Activity Overview</h3>
+      {/* Secondary Info: Activity Chart */}
+      <Card className="p-6 mb-card-gap shadow-medium">
+        <div className="flex items-center justify-between mb-card-gap">
+          <h3 className="font-semibold text-lg">Activity Overview</h3>
         </div>
         
         {/* Period Toggle */}
@@ -149,63 +158,82 @@ export function StatsView({
           type="single" 
           value={period} 
           onValueChange={(value) => value && onPeriodChange(value as TimePeriod)}
-          className="justify-start mb-4"
+          className="justify-start mb-card-gap"
         >
-          <ToggleGroupItem value="daily" className="text-xs px-3 h-8">
+          <ToggleGroupItem value="daily" className="text-xs px-3 h-8 font-medium">
             Daily
           </ToggleGroupItem>
-          <ToggleGroupItem value="weekly" className="text-xs px-3 h-8">
+          <ToggleGroupItem value="weekly" className="text-xs px-3 h-8 font-medium">
             Weekly
           </ToggleGroupItem>
-          <ToggleGroupItem value="monthly" className="text-xs px-3 h-8">
+          <ToggleGroupItem value="monthly" className="text-xs px-3 h-8 font-medium">
             Monthly
           </ToggleGroupItem>
-          <ToggleGroupItem value="quarterly" className="text-xs px-3 h-8">
+          <ToggleGroupItem value="quarterly" className="text-xs px-3 h-8 font-medium">
             Quarterly
           </ToggleGroupItem>
         </ToggleGroup>
 
-        <div className="flex items-end justify-between gap-2 h-32">
-          {chartData.map((day, i) => {
-            const height = (day.focusTime / chartMaxFocus) * 100;
-            const dayName = period === 'daily' || period === 'weekly'
-              ? new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })
-              : (day as any).label || `W${i + 1}`;
-            const isToday = day.date === new Date().toISOString().split('T')[0];
-            
-            return (
-              <div key={day.date} className="flex-1 flex flex-col items-center gap-2">
-                <div className="w-full flex flex-col items-center justify-end h-24">
-                  <div
-                    className={cn(
-                      "w-full max-w-8 rounded-t-md transition-all",
-                      isToday ? "gradient-focus" : "bg-focus/60"
-                    )}
-                    style={{ height: `${Math.max(height, 4)}%` }}
-                  />
+        <div className={cn(
+          "overflow-x-auto -mx-6 px-6",
+          (period === 'monthly' || period === 'quarterly') && "pb-2"
+        )}>
+          <div className={cn(
+            "flex items-end gap-element-gap h-32",
+            period === 'daily' || period === 'weekly' ? "justify-between" : "justify-start"
+          )}
+          style={{
+            minWidth: period === 'monthly' || period === 'quarterly' 
+              ? `${chartData.length * 40}px` 
+              : 'auto'
+          }}>
+            {chartData.map((day, i) => {
+              const height = (day.focusTime / chartMaxFocus) * 100;
+              const dayName = period === 'daily' || period === 'weekly'
+                ? new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })
+                : (day as any).label || `W${i + 1}`;
+              const isToday = day.date === new Date().toISOString().split('T')[0];
+              
+              return (
+                <div 
+                  key={day.date} 
+                  className={cn(
+                    "flex flex-col items-center gap-element-gap",
+                    period === 'daily' || period === 'weekly' ? "flex-1" : "min-w-[32px]"
+                  )}
+                >
+                  <div className="w-full flex flex-col items-center justify-end h-24">
+                    <div
+                      className={cn(
+                        "w-full max-w-8 rounded-t-md transition-all hover:opacity-90",
+                        isToday ? "gradient-focus shadow-sm" : "bg-focus/70"
+                      )}
+                      style={{ height: `${Math.max(height, 4)}%` }}
+                    />
+                  </div>
+                  <span className={cn(
+                    "text-xs whitespace-nowrap",
+                    isToday ? "font-bold text-foreground" : "text-muted-foreground font-medium"
+                  )}>
+                    {dayName}
+                  </span>
                 </div>
-                <span className={cn(
-                  "text-xs",
-                  isToday ? "font-bold text-foreground" : "text-muted-foreground"
-                )}>
-                  {dayName}
-                </span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-        <div className="flex items-center justify-center gap-2 mt-4">
-          <div className="w-3 h-3 rounded-full gradient-focus" />
-          <span className="text-xs text-muted-foreground">Focus time (minutes)</span>
+        <div className="flex items-center justify-center gap-element-gap mt-card-gap">
+          <div className="w-3 h-3 rounded-full gradient-focus shadow-sm" />
+          <span className="text-xs text-muted-foreground font-medium">Focus time (minutes)</span>
         </div>
       </Card>
 
-      {/* Completed Tasks List with Search */}
+      {/* Tertiary Info: Completed Tasks List */}
       <CompletedTasksList tasks={archivedTasks} onDeleteArchivedTask={onDeleteArchivedTask} />
 
-      {/* Summary */}
-      <div className="mt-6 text-center text-muted-foreground text-sm">
-        <p>Keep up the great work! Your consistency is building strong habits.</p>
+      {/* Footer Summary with section break */}
+      <div className="mt-section text-center text-muted-foreground text-sm">
+        <p className="font-medium">Keep up the great work! Your consistency is building strong habits.</p>
       </div>
     </div>
   );
