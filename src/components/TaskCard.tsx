@@ -14,8 +14,8 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, onComplete, onDelete, onStartTimer, onClick }: TaskCardProps) {
-  const isOverdue = isPast(task.deadline) && !task.completed;
-  const isUrgent = isFuture(task.deadline) && differenceInDays(task.deadline, new Date()) <= 3;
+  const isOverdue = (task.deadline ? isPast(task.deadline) : false) && !task.completed;
+  const isUrgent = (task.deadline ? isFuture(task.deadline) : false) && differenceInDays(task.deadline ?? new Date(), new Date()) <= 3;
   
   const formatFocusTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -64,10 +64,10 @@ export function TaskCard({ task, onComplete, onDelete, onStartTimer, onClick }: 
               isOverdue ? "text-destructive" : isUrgent ? "text-warning" : "text-muted-foreground"
             )}>
               <Calendar className="w-3 h-3" />
-              <span>{format(task.deadline, 'MMM d, h:mm a')}</span>
+              <span>{task.deadline ? format(task.deadline, 'MMM d, h:mm a') : 'No due date'}</span>
               {!task.completed && (
                 <span className="ml-1">
-                  ({isOverdue ? 'overdue' : formatDistanceToNow(task.deadline, { addSuffix: true })})
+                  ({isOverdue ? 'overdue' : (task.deadline ? formatDistanceToNow(task.deadline, { addSuffix: true }) : 'Anytime')})
                 </span>
               )}
             </div>

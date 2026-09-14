@@ -54,7 +54,7 @@ export function useNotifications({
     });
 
     return () => {
-      stateListener.remove();
+      void stateListener.then(handle => handle.remove());
     };
   }, [isNative]);
 
@@ -158,7 +158,6 @@ export function useNotifications({
               body: bodyText,
               ongoing: true, // Makes notification persistent (can't be swiped away)
               autoCancel: false,
-              silent: true, // Completely silent - no sound or vibration
               sound: undefined, // Explicitly no sound
               actionTypeId: 'TIMER_ACTIONS',
               extra: {
@@ -316,7 +315,7 @@ export function useNotifications({
     );
 
     return () => {
-      listener.remove();
+      void listener.then(handle => handle.remove());
     };
   }, [isNative, onPause, onResume, onBreak, onStop, onComplete]);
 

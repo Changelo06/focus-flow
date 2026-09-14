@@ -6,9 +6,8 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   plugins: {
     LocalNotifications: {
-      smallIcon: "ic_stat_icon_config_sample",
+      smallIcon: "ic_stat_timer",
       iconColor: "#488AFF",
-      sound: "ringtone.mp3",
     },
     SplashScreen: {
       launchShowDuration: 0,

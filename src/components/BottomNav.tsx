@@ -2,14 +2,15 @@ import { Timer, ListTodo, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface BottomNavProps {
-  activeTab: 'timer' | 'tasks' | 'stats';
-  onTabChange: (tab: 'timer' | 'tasks' | 'stats') => void;
+  activeTab: 'timer' | 'tasks' | 'stats' | 'history';
+  onTabChange: (tab: 'timer' | 'tasks' | 'stats' | 'history') => void;
 }
 
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const tabs = [
     { id: 'timer' as const, icon: Timer, label: 'Focus' },
     { id: 'tasks' as const, icon: ListTodo, label: 'Tasks' },
+    { id: 'history' as const, icon: ListTodo, label: 'History' },
     { id: 'stats' as const, icon: BarChart3, label: 'Stats' },
   ];
 

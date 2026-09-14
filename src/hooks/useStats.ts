@@ -1,3 +1,5 @@
+import { SessionRecord } from '@/lib/timerState';
+import { dayKey, timeInRange } from '@/lib/sessionStats';
 import { useMemo } from 'react';
 import { Task, WeeklyStats, DailyStats } from '@/types';
 
@@ -15,54 +17,22 @@ const PERIOD_CONFIG: Record<TimePeriod, PeriodConfig> = {
   quarterly: { days: 90, label: 'This Quarter' },
 };
 
-export function useStats(tasks: Task[], period: TimePeriod = 'weekly') {
+export function useStats(tasks: Task[], period: TimePeriod = 'weekly', history: SessionRecord[] = []) {
   const periodStats = useMemo((): WeeklyStats => {
     const now = new Date();
     const config = PERIOD_CONFIG[period];
-    const startDate = new Date(now.getTime() - config.days * 24 * 60 * 60 * 1000);
-    
     const dailyMap = new Map<string, DailyStats>();
-    
-    // Initialize days for the period
+    let totalFocusTime = 0, totalBreakTime = 0, tasksCompleted = 0;
     for (let i = config.days - 1; i >= 0; i--) {
-      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-      const dateKey = date.toISOString().split('T')[0];
-      dailyMap.set(dateKey, {
-        date: dateKey,
-        focusTime: 0,
-        tasksCompleted: 0,
-      });
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1);
+      const tracked = timeInRange(history, start.getTime(), end.getTime());
+      const completed = tasks.filter(t => t.completed && t.completedAt && t.completedAt >= start && t.completedAt < end).length;
+      totalFocusTime += tracked.focus / 60;
+      totalBreakTime += tracked.rest / 60;
+      tasksCompleted += completed;
+      dailyMap.set(dayKey(start), { date: dayKey(start), focusTime: tracked.focus / 60, tasksCompleted: completed });
     }
-
-    let totalFocusTime = 0;
-    let totalBreakTime = 0;
-    let tasksCompleted = 0;
-
-    tasks.forEach(task => {
-      const taskDate = task.createdAt;
-      const dateKey = taskDate.toISOString().split('T')[0];
-      
-      // Only count tasks within the period
-      if (taskDate >= startDate) {
-        if (task.completed) {
-          tasksCompleted++;
-          const daily = dailyMap.get(dateKey);
-          if (daily) {
-            daily.tasksCompleted++;
-          }
-        }
-
-        // Sum focus time for the period
-        totalFocusTime += task.focusTime / 60;
-        totalBreakTime += task.breakTime / 60;
-
-        // Add to daily focus time
-        const daily = dailyMap.get(dateKey);
-        if (daily) {
-          daily.focusTime += task.focusTime / 60;
-        }
-      }
-    });
 
     return {
       totalFocusTime: Math.round(totalFocusTime),
@@ -70,7 +40,7 @@ export function useStats(tasks: Task[], period: TimePeriod = 'weekly') {
       tasksCompleted,
       dailyStats: Array.from(dailyMap.values()),
     };
-  }, [tasks, period]);
+  }, [tasks, period, history]);
 
   const monthlyCompletionRate = useMemo(() => {
     const now = new Date();

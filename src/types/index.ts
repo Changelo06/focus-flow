@@ -2,7 +2,8 @@ export interface Task {
   id: string;
   title: string;
   description: string;
-  deadline: Date;
+  deadline: Date | null;
+  completedAt?: Date;
   completed: boolean;
   createdAt: Date;
   focusTime: number; // in seconds

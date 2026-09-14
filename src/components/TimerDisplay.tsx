@@ -101,9 +101,10 @@ export function TimerDisplay({
             session.status === 'completed' && "text-success"
           )}>
             {session.status === 'idle' && 'Ready'}
-            {session.status === 'focus' && 'Locked In'}
-            {session.status === 'break' && 'Break Time'}
-            {session.status === 'completed' && 'Complete!'}
+            {isPaused && 'Paused'}
+            {!isPaused && session.status === 'focus' && 'Locked In'}
+            {!isPaused && session.status === 'break' && 'Break Time'}
+            {session.status === 'completed' && (session.elapsed >= session.duration ? 'Complete!' : 'Session saved')}
           </div>
         </div>
 

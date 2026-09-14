@@ -1,17 +1,19 @@
 import { useState, useCallback, useEffect } from 'react';
+import { SessionRecord } from '@/lib/timerState';
 import { Task } from '@/types';
 
 const STORAGE_KEY = 'lockin-tasks';
 const ARCHIVED_STORAGE_KEY = 'lockin-archived-tasks';
 
-export function useTasks() {
+export function useTasks(history: SessionRecord[] = []) {
   const [tasks, setTasks] = useState<Task[]>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
       return parsed.map((t: Task) => ({
         ...t,
-        deadline: new Date(t.deadline),
+        deadline: t.deadline ? new Date(t.deadline) : null,
+        completedAt: t.completedAt ? new Date(t.completedAt) : undefined,
         createdAt: new Date(t.createdAt),
       }));
     }
@@ -24,7 +26,8 @@ export function useTasks() {
       const parsed = JSON.parse(stored);
       return parsed.map((t: Task) => ({
         ...t,
-        deadline: new Date(t.deadline),
+        deadline: t.deadline ? new Date(t.deadline) : null,
+        completedAt: t.completedAt ? new Date(t.completedAt) : undefined,
         createdAt: new Date(t.createdAt),
       }));
     }
@@ -53,11 +56,11 @@ export function useTasks() {
   }, []);
 
   const updateTask = useCallback((id: string, updates: Partial<Task>) => {
-    setTasks(prev => prev.map(task => 
+    setTasks(prev => prev.map(task =>
       task.id === id ? { ...task, ...updates } : task
     ));
     // Also update in archive if exists
-    setArchivedTasks(prev => prev.map(task => 
+    setArchivedTasks(prev => prev.map(task =>
       task.id === id ? { ...task, ...updates } : task
     ));
   }, []);
@@ -77,8 +80,8 @@ export function useTasks() {
 
   const completeTask = useCallback((id: string) => {
     setTasks(prev => {
-      const updated = prev.map(task => 
-        task.id === id ? { ...task, completed: true } : task
+      const updated = prev.map(task =>
+        task.id === id ? { ...task, completed: true, completedAt: task.completedAt ?? new Date() } : task
       );
       // Archive the completed task
       const completedTask = updated.find(t => t.id === id);
@@ -97,19 +100,19 @@ export function useTasks() {
   }, []);
 
   const addFocusTime = useCallback((id: string, seconds: number) => {
-    setTasks(prev => prev.map(task => 
+    setTasks(prev => prev.map(task =>
       task.id === id ? { ...task, focusTime: task.focusTime + seconds } : task
     ));
-    setArchivedTasks(prev => prev.map(task => 
+    setArchivedTasks(prev => prev.map(task =>
       task.id === id ? { ...task, focusTime: task.focusTime + seconds } : task
     ));
   }, []);
 
   const addBreakTime = useCallback((id: string, seconds: number) => {
-    setTasks(prev => prev.map(task => 
+    setTasks(prev => prev.map(task =>
       task.id === id ? { ...task, breakTime: task.breakTime + seconds } : task
     ));
-    setArchivedTasks(prev => prev.map(task => 
+    setArchivedTasks(prev => prev.map(task =>
       task.id === id ? { ...task, breakTime: task.breakTime + seconds } : task
     ));
   }, []);
@@ -117,23 +120,30 @@ export function useTasks() {
   const getUpcomingTasks = useCallback(() => {
     const now = new Date();
     const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-    return tasks.filter(task => 
-      !task.completed && 
-      task.deadline >= now && 
+    return tasks.filter(task =>
+      !task.completed &&
+      task.deadline && task.deadline >= now &&
       task.deadline <= threeDaysFromNow
-    ).sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
+    ).sort((a, b) => (a.deadline?.getTime() ?? Infinity) - (b.deadline?.getTime() ?? Infinity));
   }, [tasks]);
 
   const getOverdueTasks = useCallback(() => {
     const now = new Date();
-    return tasks.filter(task => 
-      !task.completed && task.deadline < now
-    ).sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
+    return tasks.filter(task =>
+      !task.completed && task.deadline && task.deadline < now
+    ).sort((a, b) => (a.deadline?.getTime() ?? Infinity) - (b.deadline?.getTime() ?? Infinity));
   }, [tasks]);
 
+  // Legacy totals remain intact; new journal records are derived, never added repeatedly.
+  const withHistory = (task: Task): Task => {
+    const records = history.filter(record => record.taskId === task.id);
+    return { ...task,
+      focusTime: task.focusTime + records.reduce((sum, record) => sum + record.focusTime, 0),
+      breakTime: task.breakTime + records.reduce((sum, record) => sum + record.breakTime, 0) };
+  };
   return {
-    tasks,
-    archivedTasks,
+    tasks: tasks.map(withHistory),
+    archivedTasks: archivedTasks.map(withHistory),
     addTask,
     updateTask,
     deleteTask,

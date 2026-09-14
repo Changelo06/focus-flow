@@ -20,7 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 
 interface AddTaskDialogProps {
-  onAdd: (task: { title: string; description: string; deadline: Date }) => void;
+  onAdd: (task: { title: string; description: string; deadline: Date | null }) => void;
 }
 
 export function AddTaskDialog({ onAdd }: AddTaskDialogProps) {
@@ -35,11 +35,11 @@ export function AddTaskDialog({ onAdd }: AddTaskDialogProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !date) return;
+    if (!title.trim()) return;
 
     const [hours, minutes] = time.split(':').map(Number);
-    const deadline = new Date(date);
-    deadline.setHours(hours, minutes, 0, 0);
+    const deadline = date ? new Date(date) : null;
+    deadline?.setHours(hours, minutes, 0, 0);
 
     onAdd({ title: title.trim(), description: description.trim(), deadline });
     
@@ -101,7 +101,7 @@ export function AddTaskDialog({ onAdd }: AddTaskDialogProps) {
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : "Pick a date"}
+                  {date ? format(date, "PPP") : "Due date (optional)"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -127,7 +127,7 @@ export function AddTaskDialog({ onAdd }: AddTaskDialogProps) {
           <Button 
             type="submit" 
             className="w-full gradient-focus text-focus-foreground"
-            disabled={!title.trim() || !date}
+            disabled={!title.trim()}
           >
             Create Task
           </Button>

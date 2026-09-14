@@ -27,8 +27,8 @@ export function TaskDetailDialog({
 }: TaskDetailDialogProps) {
   if (!task) return null;
 
-  const isOverdue = isPast(task.deadline) && !task.completed;
-  const isUrgent = isFuture(task.deadline) && differenceInDays(task.deadline, new Date()) <= 3;
+  const isOverdue = (task.deadline ? isPast(task.deadline) : false) && !task.completed;
+  const isUrgent = (task.deadline ? isFuture(task.deadline) : false) && differenceInDays(task.deadline ?? new Date(), new Date()) <= 3;
   
   const formatFocusTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -87,14 +87,14 @@ export function TaskDetailDialog({
               isOverdue ? "text-destructive" : isUrgent ? "text-warning" : "text-foreground"
             )}>
               <Calendar className="w-4 h-4" />
-              <span className="font-medium">{format(task.deadline, 'MMMM d, yyyy h:mm a')}</span>
+              <span className="font-medium">{task.deadline ? format(task.deadline, 'MMMM d, yyyy h:mm a') : 'No due date'}</span>
             </div>
             {!task.completed && (
               <p className={cn(
                 "text-xs mt-1.5",
                 isOverdue ? "text-destructive" : "text-muted-foreground"
               )}>
-                {isOverdue ? 'Overdue' : formatDistanceToNow(task.deadline, { addSuffix: true })}
+                {isOverdue ? 'Overdue' : (task.deadline ? formatDistanceToNow(task.deadline, { addSuffix: true }) : 'Anytime')}
               </p>
             )}
           </div>

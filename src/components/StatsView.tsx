@@ -190,8 +190,8 @@ export function StatsView({
             {chartData.map((day, i) => {
               const height = (day.focusTime / chartMaxFocus) * 100;
               const dayName = period === 'daily' || period === 'weekly'
-                ? new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })
-                : (day as any).label || `W${i + 1}`;
+                ? new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' })
+                : ('label' in day ? String(day.label) : '') || `W${i + 1}`;
               const isToday = day.date === new Date().toISOString().split('T')[0];
               
               return (

@@ -58,7 +58,7 @@ export function CompletedTasksList({ tasks, onDeleteArchivedTask }: CompletedTas
           'Task ID': task.id,
           'Title': task.title,
           'Description': task.description,
-          'Deadline': task.deadline.toISOString(),
+          'Deadline': task.deadline?.toISOString() ?? '',
           'Created At': task.createdAt.toISOString(),
           'Completed': task.completed ? 'Yes' : 'No',
           'Focus Time (seconds)': task.focusTime,

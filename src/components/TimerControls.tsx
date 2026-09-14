@@ -42,6 +42,9 @@ export function TimerControls({
 
       {(status === 'focus' || status === 'break') && (
         <>
+          <Button size="lg" className="w-full" onClick={isPaused ? onResume : onPause}>
+            {isPaused ? 'Resume timer' : 'Pause timer'}
+          </Button>
           {/* Action Buttons */}
           <div className="flex items-center gap-3 w-full">
             {status === 'focus' && (
@@ -61,7 +64,7 @@ export function TimerControls({
               <Button 
                 size="lg" 
                 onClick={onResumeFocus || onResume}
-                className="gradient-focus text-focus-foreground hover:opacity-90 px-6 py-6 flex-1"
+                className="gradient-focus text-focus-foreground hover:opacity-90 px-3 py-6 flex-1"
                 disabled={isPaused}
               >
                 <Play className="w-5 h-5 mr-2" />
@@ -72,11 +75,10 @@ export function TimerControls({
             <Button 
               size="lg" 
               onClick={onComplete}
-              className="gradient-success text-success-foreground hover:opacity-90 px-6 py-6 flex-1"
-              disabled={isPaused}
+              className="gradient-success text-success-foreground hover:opacity-90 px-3 py-6 flex-1"
             >
               <CheckCircle2 className="w-5 h-5 mr-2" />
-              Done
+              End session
             </Button>
           </div>
         </>
